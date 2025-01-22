@@ -20,6 +20,12 @@ namespace OMS.Data
                 .HasConversion(
                     v => System.Text.Json.JsonSerializer.Serialize(v, new System.Text.Json.JsonSerializerOptions()),
                     v => System.Text.Json.JsonSerializer.Deserialize<List<string>>(v, new System.Text.Json.JsonSerializerOptions()));
+
+            base.OnModelCreating(modelBuilder);
+
+            // Configure OrderDetails
+            modelBuilder.Entity<Order>()
+                .OwnsOne(o => o.OrderDetails);
         }
     }
 }

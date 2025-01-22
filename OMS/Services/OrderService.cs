@@ -1,5 +1,8 @@
-﻿using OMS.Repositories;
+﻿using Microsoft.EntityFrameworkCore;
+using OMS.Data;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace OMS.Services
 {
@@ -8,51 +11,94 @@ namespace OMS.Services
         IEnumerable<Models.Order> GetAllOrders();
         Models.Order GetOrderById(string orderId);
         void CreateOrder(Models.Order order);
-        void UpdateOrder(string orderId, Models.Order order);
+        void UpdateOrder(string orderId, Models.Order updatedOrder);
         void DeleteOrder(string orderId);
     }
 
     public class OrderService : IOrderService
     {
-        private readonly IOrderRepository _repository;
+        private readonly OMSDbContext _context;
 
-        public OrderService(IOrderRepository repository)
+        public OrderService(OMSDbContext context)
         {
-            _repository = repository;
+            _context = context;
         }
 
         public IEnumerable<Models.Order> GetAllOrders()
         {
-            return _repository.GetAllOrders();
+            return _context.Orders
+                .Include(o => o.Products)
+                .Include(o => o.OrderDetails)
+                .ToList();
         }
 
         public Models.Order GetOrderById(string orderId)
         {
-            return _repository.GetOrderById(orderId);
+            return _context.Orders
+                .Include(o => o.Products)
+                .Include(o => o.OrderDetails)
+                .FirstOrDefault(o => o.OmsId == orderId);
         }
 
         public void CreateOrder(Models.Order order)
         {
-            _repository.CreateOrder(order);
-            _repository.Save();
+            _context.Orders.Add(order);
+            _context.SaveChanges();
         }
 
         public void UpdateOrder(string orderId, Models.Order updatedOrder)
         {
-            var existingOrder = _repository.GetOrderById(orderId);
-            if (existingOrder != null)
+            var existingOrder = GetOrderById(orderId);
+            if (existingOrder == null)
             {
-                existingOrder.Products = updatedOrder.Products;
-                existingOrder.OrderDetails = updatedOrder.OrderDetails;
-                _repository.UpdateOrder(existingOrder);
-                _repository.Save();
+                throw new KeyNotFoundException($"Order with ID '{orderId}' not found.");
             }
+
+            // Update OrderDetails
+            if (updatedOrder.OrderDetails != null) {
+                _context.Entry(existingOrder.OrderDetails).CurrentValues.SetValues(updatedOrder.OrderDetails);
+            }
+            else
+            {
+                _context.Remove(existingOrder.OrderDetails);
+                existingOrder.OrderDetails = null;
+            }
+            // update or Add Products
+            foreach (var updatedProduct in updatedOrder.Products)
+            {
+                var existingProduct = existingOrder.Products.FirstOrDefault(p => p.GTIN == updatedProduct.GTIN);
+
+                if (existingProduct != null)
+                {
+                    _context.Entry(existingProduct).CurrentValues.SetValues(updatedProduct);
+                }
+                else
+                {
+                    existingOrder.Products.Add(updatedProduct);
+                }
+            }
+
+            // Remove Products that are not present in updatedOrder
+            foreach (var existingProduct in existingOrder.Products.ToList())
+            {
+                if (!updatedOrder.Products.Any(p => p.GTIN == existingProduct.GTIN))
+                {
+                    _context.Entry(existingProduct).State = EntityState.Deleted;
+                }
+            }
+
+            _context.SaveChanges();
         }
 
         public void DeleteOrder(string orderId)
         {
-            _repository.DeleteOrder(orderId);
-            _repository.Save();
+            var order = GetOrderById(orderId);
+            if (order != null)
+            {
+                _context.Orders.Remove(order);
+
+                _context.SaveChanges();
+            }
         }
     }
 }

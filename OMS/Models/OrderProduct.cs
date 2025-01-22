@@ -7,6 +7,7 @@ namespace OMS.Models
     public class OrderProduct
     {
         [Key]
+        [RegularExpression(@"^\d{14}$", ErrorMessage = "GTIN must be exactly 14 digits.")]
         public string GTIN { get; set; }
         [Required]
         public int Quantity { get; set; }
@@ -14,7 +15,10 @@ namespace OMS.Models
         public string SerialNumberType { get; set; }
         [Required]
         public List<string> SerialNumbers { get; set; } = new List<string>();
-        [Required] 
+        [Required]
         public int TemplateId { get; set; }
+        //public string OmsId { get; set; }
+        //[ForeignKey("OmsId")]
+        //public virtual Order Order { get; set; }
     }
 }
