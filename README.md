@@ -14,6 +14,11 @@ To so testi za preverjanje pravilnosti pošiljanja napak
 5) Izvajanje operacij nad bazo (npr. SaveChanges) poteka sinhrono, kar lahko povzroči upočasnitev pri večjih količinah podatkov.
 Izboljšanje: Prehod na asinhrone operacije z uporabo async/await, zlasti pri izvajanju SaveChangesAsync() v bazi.
 
+6) Swagger trenutno prikazuje le uspešne odgovore, vendar ne vključuje informacij o tem,
+kako naj API deluje v primeru napak, kot so napake v zahtevah, napačni podatki ali napake na strežniški strani.
+Uporabniki Swaggerja ne vidijo vseh možnih vrst odgovorov (npr. 400 Bad Request, 404 Not Found, 500 Internal Server Error).
+
+
 Za celotno implementacijo, skupaj s testiranjem napak sem po lastni oceni porabil okoli 9h.
 
 
