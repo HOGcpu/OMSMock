@@ -2,6 +2,7 @@ Potrebne izbojšave:
 1) Uporaba zunanjih ključev je pomembna za zagotavljanje celovitosti podatkov. 
 V tej implementaciji sem se osredotočil na osnovno funkcionalnost, vendar bi v končni rešitvi, če bi imel na voljo več časa,
 dodal ustrezne tuje ključe v "bazo", in jih povezal znotraj OMSDbContexta. Tuji ključ in primarni ključ bi moral biti orderId (string, guid oblka).
+Zaradi časovne omejenosti sem definicijo ključev pustil, ker je naloga zahtevala le mock obliko, samo omenjam, da je to prva stvar, ki bi jo popravil.
 
 3) Trenutna validacija pri ustvarjanju ali posodabljanju naročil temelji predvsem na osnovnih preverjanjih,
 kot so dolžina GTIN in prisotnost vrednosti. Implementirati bi bilo potrebno še boljše validacije, kot je npr. preverjanje,
